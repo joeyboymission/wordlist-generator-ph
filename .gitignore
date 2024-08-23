@@ -1,0 +1,5 @@
+# IGNORE FILES AND DIRECTORIES HERE!
+
+# Ignore specific directories
+PLDTDictionaries/pldtlib_mul/
+ZTEDictionaries/zte_mul/
