@@ -51,5 +51,13 @@ To use the script, you can either download the ZIP file or clone the repository.
 
    If the command is incorrect, error handling will provide feedback.
 
+## How it works:
+Basically the script will only run using the CLI of your choice as long as the Python packages is accessible. If not, try to register its `bin` to the `Environment Variable`, this [article](https://it.engineering.oregonstate.edu/setting-virtual-environments-python) can help you set it up.
+
+If you have knowledge in using the "Command Line Interface" youre good to go, but if not you can rely to this [article](https://devblogs.microsoft.com/scripting/table-of-basic-powershell-commands/). But if so you can access the file directory by using the `cd` command followed by the directory path `C:\Custom\Directory` where the files are located.
+
+Usually this script is can be accessed and run using the `python` command and the command line is mentioned above in the Usage section. Once the parameters are correct the program will run accordingly based on how many lines you specify, the larger the lines the longer to generate a wordlist. So introduced the by batch, this is to eliviate the stress of the CPU and RAM to generate a lengthy wordlist.
+
+
 ## Contributing
 Contributions are welcome! Feel free to refactor the current codebase or add to the project. This project is primarily for educational and demonstration purposes, so detailed documentation and verbose contributions are appreciated.

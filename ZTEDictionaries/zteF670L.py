@@ -1,80 +1,78 @@
-#!/usr/bin/env python3
-
+import random
 import string
-import argparse
 import os
 import sys
-import numpy as np
-from datetime import datetime
-from colorama import Fore, Style, init
+import time
+from datetime import datetime, timedelta
 
-init(autoreset=True)  # Initialize colorama
+# Default parameters
+DEFAULT_DIRECTORY = r"D:\Documents\PROGRAMMING FILES\Wifi Hacking\dictionaries\ZTEDictionaries"
+DEFAULT_FILENAME = "ztelib.txt"
+DEFAULT_NUM_LINES = 1000
+DEFAULT_NUM_BATCHES = 10
 
-def generate_unique_combinations(num_combinations):
-    characters = string.ascii_lowercase + string.digits  # Includes lowercase letters and digits
-    ascii_characters = np.array([ord(c) for c in characters], dtype=np.int32)
-    seen = set()
-    combinations = []
+def generate_passwords(num_lines):
+    """Generates a set of unique passwords for ZTE routers."""
+    passwords = set()
+    while len(passwords) < num_lines:
+        password = ''.join(random.choices(string.ascii_uppercase + string.ascii_lowercase + string.digits, k=8))
+        passwords.add(password)
+    return passwords
 
-    while len(combinations) < num_combinations:
-        batch_size = min(num_combinations - len(combinations), 10000)
-        batch = np.random.choice(ascii_characters, (batch_size, 8))
-        for comb in batch:
-            comb_str = ''.join(chr(c) for c in comb)
-            if comb_str not in seen:
-                seen.add(comb_str)
-                combinations.append(comb_str)
-                if len(combinations) % 1000 == 0:  # Update progress every 1000 combinations
-                    print_progress(len(combinations), num_combinations)
-    
-    return combinations
-
-def write_to_file(output_dir, filename, combinations, total_combinations):
-    try:
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
-    except PermissionError as e:
-        print(f"PermissionError: {e}")
-        sys.exit(1)
-
-    file_path = os.path.join(output_dir, filename)
-    
+def save_passwords_to_file(passwords, file_path):
+    """Saves the generated passwords to a text file."""
     with open(file_path, 'w') as file:
-        for i, comb in enumerate(combinations, 1):
-            file.write(comb + '\n')
-            if i % 1000 == 0:  # Update progress every 1000 combinations
-                print_progress(i, total_combinations)
-    
-    return file_path
+        for password in passwords:
+            file.write(password + '\n')
 
-def print_progress(current, total):
-    progress = (current / total) * 100
-    filled_length = int(progress // 5)  # Each character represents 5%
-    bar = '=' * filled_length + ' ' * (20 - filled_length)  # Fixed bar length of 20
-    print(f'\rProgress: {progress:.2f}% ({current}/{total}) [{bar}]', end='')
+def display_progress_bar(progress, total, prefix=''):
+    """Displays a progress bar with the percentage of completion."""
+    bar_length = 50  # Modify this for a shorter or longer bar
+    block = int(round(bar_length * progress / total))
+    percentage = round(progress / total * 100, 1)
+    progress_bar = "#" * block + "-" * (bar_length - block)
+    sys.stdout.write(f"\r{prefix} [{progress_bar}] {percentage}%")
     sys.stdout.flush()
 
-def main():
-    parser = argparse.ArgumentParser(description="Generate random 8-character strings and export to a text file.")
-    parser.add_argument('-d', '--directory', required=True, help="Directory to export the text file.")
-    parser.add_argument('-n', '--number', type=int, required=True, help="Number of combinations to generate.")
-    
-    args = parser.parse_args()
-
+def main(output_dir=DEFAULT_DIRECTORY, filename=DEFAULT_FILENAME, num_lines=DEFAULT_NUM_LINES, num_batches=DEFAULT_NUM_BATCHES):
+    """Main function to generate multiple batches of ZTE password files."""
     start_time = datetime.now()
-    combinations = generate_unique_combinations(args.number)
-    total_combinations = args.number
-    
-    file_path = write_to_file(args.directory, 'ztelib.txt', combinations, total_combinations)
+    print(f"Starting password generation at {start_time.strftime('%H:%M:%S')}")
+
+    for batch_number in range(1, num_batches + 1):
+        batch_file_name = f"{filename.split('.')[0]}_{batch_number}.txt"
+        output_file = os.path.join(output_dir, batch_file_name)
+
+        print(f"\nGenerating {batch_file_name}...")
+        passwords = generate_passwords(num_lines)
+
+        # Display progress bar for generating a single batch
+        for i, _ in enumerate(passwords):
+            display_progress_bar(i + 1, num_lines, prefix=batch_file_name)
+            time.sleep(0.01)  # Simulate work being done
+
+        save_passwords_to_file(passwords, output_file)
+
+        # Update overall progress
+        display_progress_bar(batch_number, num_batches, prefix=f"batch {batch_number} of {num_batches}")
+        time.sleep(0.5)  # Small delay to simulate the time taken to save the file
+
     end_time = datetime.now()
     duration = end_time - start_time
-    
-    print(f"\n\n********************************************")
-    print(f"{Fore.GREEN}===== Generate library file successfully! =====")
-    print(f"Total number of passwords: {total_combinations}")
-    print(f"Time duration: {start_time.strftime('%Y-%m-%d %H:%M:%S')} to {end_time.strftime('%Y-%m-%d %H:%M:%S')} ({str(duration)})")
-    print(f"File saved to: {file_path}")
-    print(f"********************************************\n\n")
+    print(f"\nYour library {filename} is successfully generated.")
+    print(f"Time {start_time.strftime('%H:%M:%S')} to {end_time.strftime('%H:%M:%S')} with duration of {str(duration)}")
 
-if __name__ == '__main__':
-    main()
+if __name__ == "__main__":
+    # Default arguments or command line input
+    if len(sys.argv) > 1:
+        output_dir = sys.argv[1]
+        filename = sys.argv[2] if len(sys.argv) > 2 else DEFAULT_FILENAME
+        num_lines = int(sys.argv[3]) if len(sys.argv) > 3 else DEFAULT_NUM_LINES
+        num_batches = int(sys.argv[4]) if len(sys.argv) > 4 else DEFAULT_NUM_BATCHES
+    else:
+        output_dir = DEFAULT_DIRECTORY
+        filename = DEFAULT_FILENAME
+        num_lines = DEFAULT_NUM_LINES
+        num_batches = DEFAULT_NUM_BATCHES
+
+    main(output_dir, filename, num_lines, num_batches)
